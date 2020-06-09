@@ -1,0 +1,40 @@
+﻿using Microsoft.AspNet.Identity;
+using NguyenLeChiBao_Lab456.DTOs;
+using NguyenLeChiBao_Lab456.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Web.Http;
+
+namespace NguyenLeChiBao_Lab456.Controllers
+{
+    public class FollowingsController : ApiController
+    {
+        private ApplicationDbContext _dbContext;
+        public FollowingsController()
+        {
+            _dbContext = new ApplicationDbContext();
+        }
+        [HttpPost]
+        public IHttpActionResult Follow(FollowingDto followingDto)
+        {
+            var userId = User.Identity.GetUserId();
+           if(_dbContext.Followings.Any(f => f.FolloweeId == userId && f.FolloweeId == followingDto.FolloweeId))
+            {
+                return BadRequest("Following already exists");
+            }   
+
+
+            var following = new Following
+            {
+                FollowerId = userId,
+                FolloweeId = followingDto.FolloweeId
+            };
+            _dbContext.Followings.Add(following);
+            _dbContext.SaveChanges();
+            return Ok();
+        }
+    }
+}
