@@ -20,16 +20,12 @@ namespace NguyenLeChiBao_Lab456.Controllers
         [HttpPost]
         public IHttpActionResult Follow(FollowingDto followingDto)
         {
-            var userId = User.Identity.GetUserId();
-           if(_dbContext.Followings.Any(f => f.FolloweeId == userId && f.FolloweeId == followingDto.FolloweeId))
-            {
+            var UserId = User.Identity.GetUserId();
+            if (_dbContext.Followings.Any(f => f.FollowerId == UserId && f.FolloweeId == followingDto.FolloweeId))
                 return BadRequest("Following already exists");
-            }   
-
-
             var following = new Following
             {
-                FollowerId = userId,
+                FollowerId = UserId,
                 FolloweeId = followingDto.FolloweeId
             };
             _dbContext.Followings.Add(following);

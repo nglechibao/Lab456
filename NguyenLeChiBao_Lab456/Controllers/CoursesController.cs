@@ -3,6 +3,7 @@ using NguyenLeChiBao_Lab456.Models;
 using NguyenLeChiBao_Lab456.ViewModel;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
@@ -22,7 +23,7 @@ namespace NguyenLeChiBao_Lab456.Controllers
         [Authorize]
         public ActionResult Create()
         {
-            var ViewModel = new CoursesViewModel
+            var ViewModel = new CourseViewModel
             {
                 Categories = _dbContext.Categories.ToList()
             };
@@ -33,7 +34,7 @@ namespace NguyenLeChiBao_Lab456.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(CoursesViewModel viewModel)
+        public ActionResult Create(CourseViewModel viewModel)
         {
             if (ModelState.IsValid)
             {
@@ -50,6 +51,33 @@ namespace NguyenLeChiBao_Lab456.Controllers
             _dbContext.Courses.Add(course);
             _dbContext.SaveChanges();
             return RedirectToAction("Index", "Home"); ;
+        }
+        public ActionResult Attending()
+        {
+            var userId = User.Identity.GetUserId();
+            var courses = _dbContext.Attendances
+                .Where(a => a.AttendeeId == userId)
+                .Select(a => a.Course)
+                .Include(l => l.Lecturer)
+                .Include(l => l.Category)
+                .ToList();
+            var viewModel = new CoursesViewModel
+            {
+                UpcommingCourses = courses,
+                ShowAction = User.Identity.IsAuthenticated
+            };
+            return View(viewModel);
+        }
+        [Authorize]
+        public ActionResult Mine()
+        {
+            var userId = User.Identity.GetUserId();
+            var courses = _dbContext.Courses
+                .Where(a => a.LecturerID == userId && a.DateTime > DateTime.Now)
+                .Include(l => l.Lecturer)
+                .Include(a => a.Category)
+                .ToList();
+            return View(courses);
         }
     }
 }
